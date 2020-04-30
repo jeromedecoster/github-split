@@ -32,7 +32,9 @@ FILES=${FILES::-1}
 
 log create README.md
 cat > README.md << EOF
-$(echo "### $1")
+$(echo "## $1")
+
+### curl
 
 \`\`\`bash
 curl raw.github.com/jeromedecoster/$REPOSITORY/master/script.sh \\
