@@ -21,4 +21,4 @@ sudo curl raw.githubusercontent.com/jeromedecoster/github-split/master/github-sp
 sudo chmod ug+x github-split
 sudo chown $UID:$UID github-split
 
-log complete github-split successfully created
+log complete github-split successfully installed
