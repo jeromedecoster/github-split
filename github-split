@@ -32,7 +32,7 @@ FILES=${FILES::-1}
 
 log create README.md
 cat > README.md << EOF
-$(echo "## $1")
+$(echo "## $REPOSITORY")
 
 ### curl
 
@@ -90,10 +90,7 @@ done
 log merge xa*
 cat xa* > \$NAME
 
-if [[ \$(md5sum \$NAME | cut -d ' ' -f 1) != \$MD5 ]]
-then
-    log checksum error
-fi
+[[ \$(md5sum \$NAME | cut -d ' ' -f 1) != \$MD5 ]] && log checksum error;
 
 chmod \$CHMOD \$NAME
 
