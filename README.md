@@ -1,4 +1,4 @@
-## github-split
+# github-split
 
 ### install with curl
 
