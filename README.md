@@ -8,3 +8,12 @@ curl raw.github.com/jeromedecoster/github-split/master/script.sh \
     --silent \
     | bash
 ```
+
+### install with wget
+
+```bash
+wget raw.github.com/jeromedecoster/github-split/master/script.sh \
+    --output-document=- \
+    --quiet \
+    | bash
+```
