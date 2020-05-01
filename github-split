@@ -32,9 +32,9 @@ FILES=${FILES::-1}
 
 log create README.md
 cat > README.md << EOF
-$(echo "## $REPOSITORY")
+$(echo "# $REPOSITORY")
 
-### curl
+### install with curl
 
 \`\`\`bash
 curl raw.github.com/jeromedecoster/$REPOSITORY/master/script.sh \\
@@ -43,7 +43,7 @@ curl raw.github.com/jeromedecoster/$REPOSITORY/master/script.sh \\
     | bash
 \`\`\`
 
-### wget
+### install with wget
 
 \`\`\`bash
 wget raw.github.com/jeromedecoster/$REPOSITORY/master/script.sh \\
