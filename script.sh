@@ -4,6 +4,7 @@ log() { echo -e "\e[38;5;82;4m${1}\e[0m \e[38;5;226m${@:2}\e[0m"; }
 err() { echo -e "\e[38;5;196;4m${1}\e[0m \e[38;5;87m${@:2}\e[0m" >&2; }
 
 download() {
+    log download "$1"
     if [[ -n $(which curl) ]]
     then
         sudo curl "$1" \
@@ -41,5 +42,5 @@ cd ~/.config/github-split
 download raw.githubusercontent.com/jeromedecoster/github-split/master/README.md.tpl
 download raw.githubusercontent.com/jeromedecoster/github-split/master/script.sh.tpl
 
-log complete github-split successfully installed
+log installed github-split
 exit 0
