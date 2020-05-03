@@ -1,55 +1,48 @@
+#!/bin/bash
 set -e
 
-URL=https://raw.githubusercontent.com/jeromedecoster/{{REPOSITORY}}/master
+usage() { echo 'usage: github-split <repository> <file> [file] ...'; exit; }
 
-log() { echo -e "\e[0;4m${1}\e[0m ${@:2}"; }
+log() { echo -e "\e[38;5;82;4m${1}\e[0m \e[38;5;226m${@:2}\e[0m"; }
+err() { echo -e "\e[38;5;196;4m${1}\e[0m \e[38;5;87m${@:2}\e[0m" >&2; }
+
+[[ $1 == '-h' || $1 == '--help' || $# -lt 2 || ! -f $2 ]] && { usage; }
+[[ -d split-$1 ]] && { err abort split-$1 already exists; exit; }
 
 CWD=$(pwd)
 TEMP=$(mktemp --directory)
 
+log zip create archive.zip
+zip --junk-paths -9 $TEMP/archive.zip ${@:2}
+
 cd $TEMP
-for file in {{FILES}}
-do
-    log download $URL/$file
-    if [[ -n $(which curl) ]]
-    then
-        curl $URL/$file \
-            --location \
-            --remote-name \
-            --progress-bar
-    else
-        wget $URL/$file \
-            --quiet \
-            --show-progress
-    fi
-done
+MD5=$(md5sum archive.zip | cut -d ' ' -f 1)
+log md5 $MD5
 
-log merge xa* as archive.zip
-cat xa* > archive.zip
+SIZE=$(du archive.zip | sed 's|[^0-9].*$||g')
+BYTES=500KB
+[[ $SIZE -gt 5120 ]] && BYTES=1MB;
+[[ $SIZE -gt 10240 ]] && BYTES=2MB; 
+[[ $SIZE -gt 15360 ]] && BYTES=3MB;
+[[ $SIZE -gt 20480 ]] && BYTES=4MB;
+[[ $SIZE -gt 25600 ]] && BYTES=5MB;
 
-log check md5
-[[ $(md5sum archive.zip | cut -d ' ' -f 1) != {{MD5}} ]] \
-    && { log checksum error; exit; }
+log split archive.zip into pieces of $BYTES
+split --bytes=$BYTES archive.zip
+rm archive.zip
+FILES=$(ls -1 | tr '\n' ' ')
+FILES=${FILES::-1}
 
-log unzip archive.zip
-unzip archive.zip
+log create README.md
+sed "s|{{REPOSITORY}}|$1|" ~/.config/github-split/README.md.tpl > README.md
 
-# inline the filenames in the zip
-CONTENT=$(unzip -l archive.zip \
-    | tail -n +4 \
-    | head -n -2 \
-    | sed -E 's|^.*:[0-9]*\s*||' \
-    | tr '\t' ' ')
+log create script.sh
+sed --expression "s|{{REPOSITORY}}|$1|" \
+    --expression "s|{{FILES}}|$FILES|" \
+    --expression "s|{{MD5}}|$MD5|" \
+    ~/.config/github-split/script.sh.tpl > script.sh
 
-# check if $CWD is writable by the user
-if [[ -z $(sudo --user $(whoami) --set-home bash -c "[[ -w $CWD ]] && echo 1;") ]]
-then
-    log warn sudo access is required
-    sudo mv $CONTENT $CWD
-else
-    mv $CONTENT $CWD
-fi
-
-log created $CONTENT
+mv $TEMP $CWD/split-$1
+log complete split-$1 successfully created
 
 rm --force --recursive $TEMP
