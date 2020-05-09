@@ -3,11 +3,15 @@ set -e
 
 usage() { echo 'usage: github-split <repository> <file> [file] ...'; exit; }
 
-log() { echo -e "\e[38;5;82;4m${1}\e[0m \e[38;5;226m${@:2}\e[0m"; }
-err() { echo -e "\e[38;5;196;4m${1}\e[0m \e[38;5;87m${@:2}\e[0m" >&2; }
+log()   { echo -e "\e[30;47m ${1^^} \e[0m ${@:2}"; }
+info()  { echo -e "\e[48;5;28m ${1^^} \e[0m ${@:2}"; }
+warn()  { echo -e "\e[48;5;202m ${1^^} \e[0m ${@:2}" >&2; }
+error() { echo -e "\e[48;5;196m ${1^^} \e[0m ${@:2}" >&2; }
 
 [[ $1 == '-h' || $1 == '--help' || $# -lt 2 || ! -f $2 ]] && { usage; }
-[[ -d split-$1 ]] && { err abort split-$1 already exists; exit; }
+
+info create split
+[[ -d split-$1 ]] && { error abort split-$1 already exists; exit; }
 
 CWD=$(pwd)
 TEMP=$(mktemp --directory)
@@ -34,15 +38,18 @@ FILES=$(ls -1 | tr '\n' ' ')
 FILES=${FILES::-1}
 
 log create README.md
-sed "s|{{REPOSITORY}}|$1|" ~/.config/github-split/README.md.tpl > README.md
+sed "s|{{REPOSITORY}}|$1|" \
+    ~/.config/github-split/README.md.tpl \
+    > README.md
 
-log create script.sh
+log create install.sh
 sed --expression "s|{{REPOSITORY}}|$1|" \
     --expression "s|{{FILES}}|$FILES|" \
     --expression "s|{{MD5}}|$MD5|" \
-    ~/.config/github-split/script.sh.tpl > script.sh
+    ~/.config/github-split/install.sh.tpl \
+    > install.sh
 
 mv $TEMP $CWD/split-$1
-log complete split-$1 successfully created
+info created split-$1
 
 rm --force --recursive $TEMP
