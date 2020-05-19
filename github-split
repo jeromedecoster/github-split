@@ -17,12 +17,19 @@ CWD=$(pwd)
 TEMP=$(mktemp --directory)
 
 log zip create archive.zip
-zip --junk-paths -9 $TEMP/archive.zip ${@:2}
+zip --junk-paths -9 $TEMP/archive.zip "${@:2}"
 
 cd $TEMP
 MD5=$(md5sum archive.zip | cut -d ' ' -f 1)
 log md5 $MD5
 
+# filenames in the zip in base64
+CONTENT=$(unzip -l archive.zip \
+    | tail -n +4 \
+    | head -n -2 \
+    | sed --expression 's|^.*:[0-9]*\s*||' \
+    | base64 -w 0)
+    
 SIZE=$(du archive.zip | sed 's|[^0-9].*$||g')
 BYTES=500KB
 [[ $SIZE -gt 5120 ]] && BYTES=1MB;
@@ -43,7 +50,8 @@ sed "s|{{REPOSITORY}}|$1|" \
     > README.md
 
 log create install.sh
-sed --expression "s|{{REPOSITORY}}|$1|" \
+sed --expression "s|{{CONTENT}}|$CONTENT|" \
+    --expression "s|{{REPOSITORY}}|$1|" \
     --expression "s|{{FILES}}|$FILES|" \
     --expression "s|{{MD5}}|$MD5|" \
     ~/.config/github-split/install.sh.tpl \

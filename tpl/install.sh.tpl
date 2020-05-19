@@ -7,6 +7,12 @@ info()  { echo -e "\e[48;5;28m ${1^^} \e[0m ${@:2}"; }
 warn()  { echo -e "\e[48;5;202m ${1^^} \e[0m ${@:2}" >&2; }
 error() { echo -e "\e[48;5;196m ${1^^} \e[0m ${@:2}" >&2; }
 
+# no file overwrite
+while read file
+do
+    [[ -f $file ]] && { warn abort $file already exists; exit 0; }
+done < <(echo {{CONTENT}} | base64 -d)
+
 CWD=$(pwd)
 TEMP=$(mktemp --directory)
 

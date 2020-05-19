@@ -25,7 +25,7 @@ info install github-split
 cd /usr/local/bin
 
 # abort if already installed
-[[ -x github-split ]] && { error abort github-split already exists; exit 0; }
+[[ -x github-split ]] && { warn abort github-split already exists; exit 0; }
 
 # ask sudo accesss if not already available
 if [[ -z $(sudo -n uptime 2>/dev/null) ]]; then
