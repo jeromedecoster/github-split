@@ -45,22 +45,27 @@ log md5 check
 log unzip archive.zip
 unzip archive.zip
 
+# check if $CWD is writable by the user
+if [[ -z $(sudo --user $(whoami) --set-home bash -c "[[ -w $CWD ]] && echo 1;") ]]
+then
+    SUDO=1
+    warn warn sudo access is required
+    sudo echo >/dev/null
+fi
+
 # inline the filenames in the zip
 CONTENT=$(unzip -l archive.zip \
     | tail -n +4 \
     | head -n -2 \
-    | sed -E 's|^.*:[0-9]*\s*||' \
-    | tr '\t' ' ')
+    | sed --expression 's|^.*:[0-9]*\s*||')
 
-# check if $CWD is writable by the user
-if [[ -z $(sudo --user $(whoami) --set-home bash -c "[[ -w $CWD ]] && echo 1;") ]]
-then
-    warn warn sudo access is required
-    sudo mv $CONTENT $CWD
-else
-    mv $CONTENT $CWD
-fi
-
-info created $CONTENT
+while read file
+do
+    [[ $SUDO -eq 1 ]] \
+        && sudo mv "$file" $CWD \
+        || mv "$file" $CWD;
+        
+    info created "$file"
+done < <(echo "$CONTENT")
 
 rm --force --recursive $TEMP
